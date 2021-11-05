@@ -1,0 +1,37 @@
+version: "3.1"
+
+services:
+  dbmig-app1:
+    image: db-migration-demo:1.0
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dbmig-db1/db_first
+      SPRING_DATASOURCE_USERNAME: dbmig_user
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8081:8080"
+
+  dbmig-db1:
+    image: postgres:12.8-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: dbmig_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db_first
+    ports:
+      - "5433:5432"
+
+  dbmig-dumper:
+    image: db-migration-dumper:1.0
+    build: ./docker/dumper
+    environment:
+      POSTGRES_HOST: dbmig-db1
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: dbmig_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db_first
+      DUMP_BUCKET: db_dump
+
+networks:
+  default:
+    external:
+      name: local_development_network
