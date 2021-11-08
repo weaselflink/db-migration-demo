@@ -7,8 +7,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://dbmig-db1/db_first
       SPRING_DATASOURCE_USERNAME: dbmig_user
       SPRING_DATASOURCE_PASSWORD: password
+      SERVER_PORT: 8081
     ports:
-      - "8081:8080"
+      - "8081:8081"
 
   dbmig-db1:
     image: postgres:12.8-alpine
@@ -18,14 +19,16 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: db_first
     ports:
-      - "5433:5432"
+      - "5433:5433"
+    command:
+      - -p 5433
 
   dbmig-dumper:
     image: db-migration-dumper:1.0
     build: ./docker/dumper
     environment:
       POSTGRES_HOST: dbmig-db1
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: 5433
       POSTGRES_USER: dbmig_user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: db_first
