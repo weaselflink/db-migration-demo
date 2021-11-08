@@ -8,7 +8,7 @@ pg_restore --version
 AWS_COMMAND="aws --no-sign-request --endpoint-url=$AWS_ENDPOINT"
 $AWS_COMMAND --version
 
-curl -s -X POST "http://dbmig-app1:8081/create/10"
+curl -s -X POST "http://dbmig-app1:8081/create/100"
 
 $AWS_COMMAND s3api create-bucket --bucket $DUMP_BUCKET
 
