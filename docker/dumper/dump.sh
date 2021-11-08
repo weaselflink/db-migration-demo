@@ -1,18 +1,46 @@
 #!/bin/bash
 
-sleep 5
+sleep 7
 
 pwd
-echo $DUMP_BUCKET
-
 pg_dump --version
-echo $POSTGRES_PASSWORD \
-    | pg_dump --blobs \
-    --format=plain \
+pg_restore --version
+AWS_COMMAND="aws --no-sign-request --endpoint-url=$AWS_ENDPOINT"
+$AWS_COMMAND --version
+
+curl -s -X POST "http://dbmig-app1:8081/create/10"
+
+$AWS_COMMAND s3api create-bucket --bucket $DUMP_BUCKET
+
+TIMESTAMP=`date +"%FT%T"`
+
+# hostname:port:database:username:password
+echo "$DUMPED_HOST:$DUMPED_PORT:$DUMPED_DB:$DUMPED_USER:$DUMPED_PASSWORD" > $HOME/.pgpass
+echo "$RESTORED_HOST:$RESTORED_PORT:$RESTORED_DB:$RESTORED_USER:$RESTORED_PASSWORD" >> $HOME/.pgpass
+chmod 600 $HOME/.pgpass
+#cat $HOME/.pgpass
+
+pg_dump \
+    --blobs \
+    --format=tar \
+    --no-owner \
     --no-privileges \
     --no-acl \
-    --host=$POSTGRES_HOST \
-    --port=$POSTGRES_PORT \
-    --username=$POSTGRES_USER \
-    --password \
-    $POSTGRES_DB
+    --host=$DUMPED_HOST \
+    --port=$DUMPED_PORT \
+    --username=$DUMPED_USER \
+    $DUMPED_DB \
+    | $AWS_COMMAND s3 cp - "s3://$DUMP_BUCKET/dump_${TIMESTAMP}.tar"
+
+$AWS_COMMAND s3 ls "s3://$DUMP_BUCKET"
+
+$AWS_COMMAND s3 cp "s3://$DUMP_BUCKET/dump_${TIMESTAMP}.tar" - \
+    | pg_restore \
+    --dbname=$RESTORED_DB \
+    --format=tar \
+    --no-owner \
+    --no-privileges \
+    --no-acl \
+    --host=$RESTORED_HOST \
+    --port=$RESTORED_PORT \
+    --username=$RESTORED_USER \

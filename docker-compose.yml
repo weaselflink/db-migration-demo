@@ -1,38 +1,71 @@
 version: "3.1"
 
 services:
+  dbmig-s3:
+    image: localstack/localstack:0.12.20
+    environment:
+      SERVICES: s3
+
   dbmig-app1:
     image: db-migration-demo:1.0
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://dbmig-db1:5433/db_first
-      SPRING_DATASOURCE_USERNAME: dbmig_user
-      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_USERNAME: dbmig_user1
+      SPRING_DATASOURCE_PASSWORD: password1
       SERVER_PORT: 8081
     ports:
       - "8081:8081"
+
+  dbmig-app2:
+    image: db-migration-demo:1.0
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dbmig-db2:5434/db_second
+      SPRING_DATASOURCE_USERNAME: dbmig_user2
+      SPRING_DATASOURCE_PASSWORD: password2
+      SERVER_PORT: 8082
+    ports:
+      - "8082:8082"
 
   dbmig-db1:
     image: postgres:12.8-alpine
     restart: always
     environment:
-      POSTGRES_USER: dbmig_user
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: dbmig_user1
+      POSTGRES_PASSWORD: password1
       POSTGRES_DB: db_first
     ports:
       - "5433:5433"
     command:
       - -p 5433
 
+  dbmig-db2:
+    image: postgres:12.8-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: dbmig_user2
+      POSTGRES_PASSWORD: password2
+      POSTGRES_DB: db_second
+    ports:
+      - "5434:5434"
+    command:
+      - -p 5434
+
   dbmig-dumper:
     image: db-migration-dumper:1.0
     build: ./docker/dumper
     environment:
-      POSTGRES_HOST: dbmig-db1
-      POSTGRES_PORT: 5433
-      POSTGRES_USER: dbmig_user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: db_first
-      DUMP_BUCKET: db_dump
+      DUMPED_HOST: dbmig-db1
+      DUMPED_PORT: 5433
+      DUMPED_USER: dbmig_user1
+      DUMPED_PASSWORD: password1
+      DUMPED_DB: db_first
+      RESTORED_HOST: dbmig-db2
+      RESTORED_PORT: 5434
+      RESTORED_USER: dbmig_user2
+      RESTORED_PASSWORD: password2
+      RESTORED_DB: db_second
+      AWS_ENDPOINT: http://dbmig-s3:4566
+      DUMP_BUCKET: db-dump
 
 networks:
   default:

@@ -1,25 +1,11 @@
-FROM alpine:3.11
+FROM amazon/aws-cli:2.3.4
 
-RUN apk -v --update add \
-        bash \
-        curl \
-        postgresql \
-        jq \
-        python \
-        py-pip \
-        groff \
-        less \
-        mailcap \
-        && \
-    pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic && \
-    apk -v --purge del py-pip && \
-    rm /var/cache/apk/*
+COPY pgdg.repo /etc/yum.repos.d/pgdg.repo
+RUN yum update -y \
+    && yum install -y bash curl postgresql12 jq \
+    && yum clean all
 
-VOLUME /root/.aws
-VOLUME /project
-WORKDIR /project
-
-COPY dump.sh /project
-
+COPY dump.sh /aws
+WORKDIR /aws
 
 ENTRYPOINT ["sh", "-c", "./dump.sh"]
