@@ -4,7 +4,7 @@ services:
   dbmig-app1:
     image: db-migration-demo:1.0
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://dbmig-db1/db_first
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dbmig-db1:5433/db_first
       SPRING_DATASOURCE_USERNAME: dbmig_user
       SPRING_DATASOURCE_PASSWORD: password
       SERVER_PORT: 8081
