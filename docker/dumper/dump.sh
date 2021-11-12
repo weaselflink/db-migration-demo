@@ -22,7 +22,7 @@ chmod 600 $HOME/.pgpass
 
 pg_dump \
     --blobs \
-    --format=tar \
+    --format=custom \
     --no-owner \
     --no-privileges \
     --no-acl \
@@ -30,14 +30,14 @@ pg_dump \
     --port=$DUMPED_PORT \
     --username=$DUMPED_USER \
     $DUMPED_DB \
-    | $AWS_COMMAND s3 cp - "s3://$DUMP_BUCKET/dump_${TIMESTAMP}.tar"
+    | $AWS_COMMAND s3 cp - "s3://$DUMP_BUCKET/dump_${TIMESTAMP}.dump"
 
 $AWS_COMMAND s3 ls "s3://$DUMP_BUCKET"
 
-$AWS_COMMAND s3 cp "s3://$DUMP_BUCKET/dump_${TIMESTAMP}.tar" - \
+$AWS_COMMAND s3 cp "s3://$DUMP_BUCKET/dump_${TIMESTAMP}.dump" - \
     | pg_restore \
     --dbname=$RESTORED_DB \
-    --format=tar \
+    --format=custom \
     --no-owner \
     --no-privileges \
     --no-acl \
