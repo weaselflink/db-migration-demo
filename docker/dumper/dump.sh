@@ -43,4 +43,4 @@ $AWS_COMMAND s3 cp "s3://$DUMP_BUCKET/dump_${TIMESTAMP}.dump" - \
     --no-acl \
     --host=$RESTORED_HOST \
     --port=$RESTORED_PORT \
-    --username=$RESTORED_USER \
+    --username=$RESTORED_USER
